@@ -7,6 +7,10 @@ contract JDR {
 
     // Число выпущенных рублей
     uint256 totalSupply;
+    // Процент налога
+    uint8 taxRate;
+    // Процент начисления
+    uint256 accrualRate;
     // Адресс владельца волюты
     address public owner;
 
@@ -51,11 +55,26 @@ contract JDR {
         _;
     }
 
+        // Проверяет, не заблокирован ли пользователь
+    modifier isEnoughReserveForAccrual(address user) {
+        uint256 accrual = balances[user].amount / 100 * accrualRate;
+        require(balances[owner].amount >= accrual, "Owner does not have enough rubles for accrual");
+        _;
+    }
+
     // Событие выпуска цифровых Ямайских рублей
     event Minted(address who, uint256 amount);
 
+    // Событие блокировки пользователя
+    event Blocked(address who);
+
+    // Событие разблокировки пользователя
+    event Unblocked(address who);
+
     constructor() {
         owner = msg.sender;
+        taxRate = 5;
+        accrualRate = 5;
     }
 
     // Функция выпуска цифровых ямайских рублей
@@ -76,7 +95,7 @@ contract JDR {
         if(amount <= 100 || msg.sender == owner) {
             tax = 0;
         } else {
-            tax = amount / 20;
+            tax = amount / 100 * taxRate;
         }
         balances[msg.sender].amount -= amount;
         balances[reciever].amount += (amount - tax);
@@ -88,6 +107,7 @@ contract JDR {
     isOwner 
     isNotOwner(user) {
         balances[user].isBlocked = true;
+        emit Blocked(user);
     }
 
     // Функция разблокировки пользователя
@@ -95,6 +115,7 @@ contract JDR {
     isOwner 
     isNotOwner(user) {
         balances[user].isBlocked = false;
+        emit Unblocked(user);
     }
 
     // Функция конфискации денег
@@ -108,5 +129,16 @@ contract JDR {
             balances[owner].amount += amount;
             balances[user].amount -= amount;
         }
+    }
+
+    // Функция начисления денег на балансе
+    function accrualPersents(address user) public 
+    isOwner 
+    isNotOwner(user) 
+    isNotBlocked(user)
+    isEnoughReserveForAccrual(user) {
+        uint256 accrual = balances[user].amount / 100 * accrualRate;
+        balances[user].amount += accrual;
+        balances[owner].amount -= accrual;
     }
 }
