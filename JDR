@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+contract JDR {
+
+    uint256 totalSupply;
+    address public owner;
+
+    mapping (address => uint256) public balances;
+
+    modifier isOwner() {
+        require(msg.sender == owner, "Caller is not owner");
+        _;
+    }
+
+    event Minted(address who, uint256 amount);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function mint(uint256 amount) public isOwner {
+        totalSupply += amount;
+        balances[msg.sender] += amount;
+        emit Minted(msg.sender, amount);
+    }
+
+    function transfer(address reciever, uint256 amount) public {
+        balances[msg.sender] = balances[msg.sender] - amount;
+        balances[reciever] = amount;
+    }
+}
