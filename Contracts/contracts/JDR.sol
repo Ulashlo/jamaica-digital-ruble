@@ -70,7 +70,7 @@ contract JDR {
   // Событие разблокировки пользователя
   event Unblocked(address who);
 
-  constructor() {
+  constructor() public {
     owner = msg.sender;
     taxRate = 5;
     accrualRate = 5;
