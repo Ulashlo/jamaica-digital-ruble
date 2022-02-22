@@ -35,7 +35,7 @@ contract('JDR', (accounts) => {
             await jdr.transfer.call(accounts[1], 1000);
 
             const transfered = await jdr.balances.call(accounts[1]);
-            assert.equal(950, transfered.amount, "Wrong amount of minted jdr");
+            assert.equal(950, transfered.amount, "Wrong amount of transfered jdr");
         });
     })
 });
